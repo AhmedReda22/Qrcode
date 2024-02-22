@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QR Code Generator</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="empty"></div>
+    <div class="container">
+      <div class="container2">
+        <img id="fizer" src="imgs/pfizer.png" alt="" />
+        <p>Enter Your Full Name</p>
+        <input type="text" placeholder="Full Name" id="fullName" />
+        <p>Enter Your Email</p>
+        <input type="email" placeholder="Email" id="email" />
+        <p>Enter Your Phone Number</p>
+        <input type="tel" placeholder="Phone Number" id="phoneNumber" />
+        <p>Enter Your Website</p>
+        <input type="url" placeholder="Website" id="website" />
+        <p>Upload Your Image</p>
+        <input type="file" id="imageUpload" accept="image/*" />
+        <div id="imgBox">
+          <img src="" alt="" id="qrImage" />
+        </div>
+        <button onclick="generateQR()">Generate QR Code</button>
+        <div id="downloadButtons" style="display: none">
+          <a id="downloadQR" download="qr-code.png" onclick="downloadQRCode()"
+            ><button>Download QR Code</button></a
+          >
+          <a id="downloadVCF" download="contact.vcf"
+            ><button>Download VCF</button></a
+          >
+        </div>
+        <button id="openNfc" onclick="openNfc()">Open NFC</button>
+      </div>
+    </div>
+
+    <script>
+      let imgBox = document.getElementById("imgBox");
+      let qrImage = document.getElementById("qrImage");
+      let fullName = document.getElementById("fullName");
+      let email = document.getElementById("email");
+      let phoneNumber = document.getElementById("phoneNumber");
+      let website = document.getElementById("website");
+      let imageUpload = document.getElementById("imageUpload");
+      let downloadQR = document.getElementById("downloadQR");
+      let downloadVCF = document.getElementById("downloadVCF");
+
+      function generateQR() {
+        let vcard = `BEGIN:VCARD
+VERSION:3.0
+FN:${fullName.value}
+EMAIL:${email.value}
+TEL:${phoneNumber.value}
+URL:${website.value}
+PHOTO;VALUE=URL:${
+          imageUpload.value ? URL.createObjectURL(imageUpload.files[0]) : ""
+        }
+END:VCARD`;
+
+        if (vcard.length > 0) {
+          qrImage.src =
+            "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" +
+            encodeURIComponent(vcard);
+          imgBox.classList.add("show-img");
+          downloadQR.href = qrImage.src;
+          downloadVCF.href =
+            "data:text/plain;charset=utf-8," + encodeURIComponent(vcard);
+          document.getElementById("downloadButtons").style.display = "block";
+        } else {
+          fullName.classList.add("error");
+          setTimeout(() => {
+            fullName.classList.remove("error");
+          }, 1000);
+        }
+      }
+
+      function downloadQRCode() {
+        let link = document.createElement("a");
+        link.href = qrImage.src;
+        link.download = "qr-code.png";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      function openNfc() {
+        window.open(qrImage.src);
+      }
+    </script>
+  </body>
+</html>
